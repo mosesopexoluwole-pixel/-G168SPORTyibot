@@ -17,9 +17,11 @@ I am a privacy-oriented utility bot focused on generating information.
 Here are my available commands:
 
 /generate - Show generation options
-/help - Show this help message
+/help - Show detailed help
 
 Click /generate to get started with all available tools.
+
+All data is generated locally and not stored.
 """
         await update.message.reply_text(welcome_text)
 
@@ -31,6 +33,7 @@ G168SPORTyibot - Privacy-Oriented Utility Bot
 Available Commands:
 /start - Welcome message
 /help - Show this help
+/generate - Interactive menu
 
 Generation Commands:
 /password [length] [special] - Generate secure password
@@ -52,9 +55,9 @@ Examples:
 /random 1 100
 /string 15
 /string 10 true
-/hash sha256 "Hello World"
-/base64 encode "Hello"
-/url decode "Hello%20World"
+/hash sha256 HelloWorld
+/base64 encode Hello
+/url decode Hello%20World
 /timestamp iso
 """
         await update.message.reply_text(help_text)
@@ -141,7 +144,7 @@ Examples:
             await query.edit_message_text(
                 "Please use:\n`/hash [algorithm] [text]`\n\n"
                 "Algorithms: md5, sha1, sha256, sha512\n"
-                "Example: `/hash sha256 Hello World`",
+                "Example: `/hash sha256 HelloWorld`",
                 parse_mode='Markdown'
             )
         
@@ -164,7 +167,7 @@ Examples:
             await query.edit_message_text(
                 f"Current Timestamp (Unix):\n\n`{timestamp}`\n\n"
                 "Use /timestamp [format] to customize\n"
-                "Formats: unix, iso, human, date, time",
+                "Formats: unix, iso, human, date, time, full",
                 parse_mode='Markdown'
             )
 
@@ -179,10 +182,6 @@ Examples:
                 length = int(args[0])
             if len(args) > 1:
                 use_special = args[1].lower() == 'true'
-            
-            if length < 8 or length > 64:
-                await update.message.reply_text("Password length must be between 8 and 64")
-                return
             
             password = self.utils.generate_password(length, use_special)
             special_status = "with" if use_special else "without"
@@ -207,9 +206,6 @@ Examples:
                 style = args[0]
             if len(args) > 1:
                 length = int(args[1])
-            
-            if style not in ['random', 'simple', 'tech']:
-                style = 'random'
             
             username = self.utils.generate_username(style, length)
             await update.message.reply_text(
@@ -256,10 +252,6 @@ Examples:
                     parse_mode='Markdown'
                 )
                 return
-        
-        if min_val >= max_val:
-            await update.message.reply_text("Minimum value must be less than maximum")
-            return
         
         number = self.utils.generate_random_number(min_val, max_val)
         await update.message.reply_text(
