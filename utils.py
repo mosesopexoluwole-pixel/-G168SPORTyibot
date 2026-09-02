@@ -5,14 +5,18 @@ import base64
 import urllib.parse
 import uuid
 import time
-import random
 from datetime import datetime
-from typing import Tuple, Optional
+from typing import Optional
 
 class BotUtils:
     @staticmethod
     def generate_password(length: int = 16, use_special: bool = True) -> str:
         """Generate a secure random password"""
+        if length < 8:
+            length = 8
+        if length > 64:
+            length = 64
+            
         chars = string.ascii_letters + string.digits
         if use_special:
             chars += "!@#$%^&*()_+-=[]{}|;:,.<>?"
@@ -23,22 +27,31 @@ class BotUtils:
     @staticmethod
     def generate_username(style: str = 'random', length: int = 8) -> str:
         """Generate random username with different styles"""
-        adjectives = ['Cool', 'Happy', 'Smart', 'Swift', 'Brave', 'Wise', 'Lucky', 'Noble']
-        nouns = ['Tiger', 'Eagle', 'Dragon', 'Wolf', 'Phoenix', 'Lion', 'Shark', 'Hawk']
+        adjectives = ['Cool', 'Happy', 'Smart', 'Swift', 'Brave', 'Wise', 'Lucky', 'Noble', 'Epic', 'Mighty']
+        nouns = ['Tiger', 'Eagle', 'Dragon', 'Wolf', 'Phoenix', 'Lion', 'Shark', 'Hawk', 'Falcon', 'Python']
         
         if style == 'random':
             adj = secrets.choice(adjectives)
             noun = secrets.choice(nouns)
-            number = secrets.randbelow(100)
+            number = secrets.randbelow(1000)
             return f"{adj}{noun}{number}"
         elif style == 'simple':
+            if length < 4:
+                length = 4
+            if length > 20:
+                length = 20
             chars = string.ascii_lowercase + string.digits
             return ''.join(secrets.choice(chars) for _ in range(length))
         elif style == 'tech':
-            prefixes = ['dev', 'tech', 'code', 'byte', 'data', 'cyber']
-            return f"{secrets.choice(prefixes)}_{secrets.token_hex(length//2)}"
-        
-        return ''.join(secrets.choice(string.ascii_letters) for _ in range(length))
+            prefixes = ['dev', 'tech', 'code', 'byte', 'data', 'cyber', 'sys', 'net']
+            suffix = secrets.token_hex(length // 2)
+            return f"{secrets.choice(prefixes)}_{suffix}"
+        else:
+            # Default to random style
+            adj = secrets.choice(adjectives)
+            noun = secrets.choice(nouns)
+            number = secrets.randbelow(100)
+            return f"{adj}{noun}{number}"
 
     @staticmethod
     def generate_uuid(version: int = 4) -> str:
@@ -51,11 +64,18 @@ class BotUtils:
     @staticmethod
     def generate_random_number(min_val: int = 0, max_val: int = 100) -> int:
         """Generate random number between min and max"""
+        if min_val >= max_val:
+            min_val, max_val = 0, 100
         return secrets.randbelow(max_val - min_val + 1) + min_val
 
     @staticmethod
     def generate_random_string(length: int = 10, include_special: bool = False) -> str:
         """Generate random string"""
+        if length < 1:
+            length = 1
+        if length > 50:
+            length = 50
+            
         chars = string.ascii_letters + string.digits
         if include_special:
             chars += "!@#$%^&*"
@@ -71,10 +91,10 @@ class BotUtils:
             'sha512': hashlib.sha512
         }
         
-        if algorithm not in hash_functions:
+        if algorithm.lower() not in hash_functions:
             algorithm = 'sha256'
         
-        hash_obj = hash_functions[algorithm]()
+        hash_obj = hash_functions[algorithm.lower()]()
         hash_obj.update(text.encode('utf-8'))
         return hash_obj.hexdigest()
 
@@ -84,7 +104,7 @@ class BotUtils:
         return base64.b64encode(text.encode('utf-8')).decode('utf-8')
 
     @staticmethod
-    def base64_decode(encoded: str) -> str:
+    def base64_decode(encoded: str) -> Optional[str]:
         """Decode Base64 to text"""
         try:
             return base64.b64decode(encoded).decode('utf-8')
@@ -97,7 +117,7 @@ class BotUtils:
         return urllib.parse.quote(text, safe='')
 
     @staticmethod
-    def url_decode(encoded: str) -> str:
+    def url_decode(encoded: str) -> Optional[str]:
         """URL decode text"""
         try:
             return urllib.parse.unquote(encoded)
@@ -114,7 +134,8 @@ class BotUtils:
             'iso': current_time.isoformat(),
             'human': current_time.strftime('%Y-%m-%d %H:%M:%S'),
             'date': current_time.strftime('%Y-%m-%d'),
-            'time': current_time.strftime('%H:%M:%S')
+            'time': current_time.strftime('%H:%M:%S'),
+            'full': current_time.strftime('%A, %B %d, %Y at %I:%M:%S %p')
         }
         
-        return formats.get(format_type, formats['unix'])
+        return formats.get(format_type.lower(), formats['unix'])
